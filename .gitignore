@@ -80,3 +80,4 @@ tmp*/
 
 # Claude Code workspace config (AI tooling, not project content)
 CLAUDE.md
+.claude/
