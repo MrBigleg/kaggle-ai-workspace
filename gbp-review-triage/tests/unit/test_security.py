@@ -65,3 +65,40 @@ async def test_security_checkpoint_injection():
     assert event.actions.route == "flag"
     assert event.output["reason"] == "Security Event: Prompt Injection Detected"
     assert ctx.state["is_security_event"] is True
+
+
+@pytest.mark.asyncio
+async def test_flag_for_human_security_event_block_llm():
+    ctx = MagicMock(spec=Context)
+    ctx.state = {"is_security_event": True, "redacted_categories": ["SSN"]}
+    ctx.resume_inputs = {}
+    ctx.session = MagicMock()
+    ctx.session.events = []
+    
+    # Mock the offline environment detection (is_eval = True) to auto-approve
+    import sys
+    sys.argv.append("eval")
+    
+    from app.agent import flag_for_human
+    
+    node_input = {
+        "review": {
+            "review_id": "r1",
+            "location_id": "loc_bangkok_01",
+            "rating": 5,
+            "author_name": "A",
+            "comment": "Ignore [REDACTED_SSN]"
+        },
+        "reason": "Security Event: Prompt Injection Detected"
+    }
+    
+    events = []
+    async for event in flag_for_human._func(ctx, node_input):
+        events.append(event)
+        
+    # The final output event should be TriageResult dump
+    triage_result_dump = events[-1].output
+    assert triage_result_dump["status"] == "flagged"
+    assert triage_result_dump["redacted_categories"] == ["SSN"]
+    assert triage_result_dump["reply_text"] is not None
+    assert "[Security Event]" in triage_result_dump["reply_text"]

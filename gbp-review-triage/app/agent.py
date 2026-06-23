@@ -271,7 +271,10 @@ async def auto_reply(ctx: Context, node_input: dict):
     reply_text = response.text.strip() if response.text else ""
 
     triage_result = TriageResult(
-        review_id=review.review_id, status="replied", reply_text=reply_text
+        review_id=review.review_id,
+        status="replied",
+        reply_text=reply_text,
+        redacted_categories=ctx.state.get("redacted_categories", [])
     )
 
     yield Event(
@@ -350,11 +353,14 @@ async def flag_for_human(ctx: Context, node_input: dict):
             yield RequestInput(interrupt_id=interrupt_id, message=msg)
             return
 
+    is_security = ctx.state.get("is_security_event", False) or "Security Event" in reason
+
     if human_response.upper() == "IGNORE":
         triage_result = TriageResult(
             review_id=review.review_id,
             status="flagged",
             flag_reason=f"Ignored by human. Original flag reason: {reason}",
+            redacted_categories=ctx.state.get("redacted_categories", [])
         )
         yield Event(
             content=types.Content(
@@ -368,39 +374,43 @@ async def flag_for_human(ctx: Context, node_input: dict):
         )
     else:
         if human_response.upper() == "APPROVE" or human_response == "":
-            profile = LOCATION_PROFILES.get(
-                review.location_id,
-                LocationProfile(
-                    location_id=review.location_id,
-                    name="Our Restaurant",
-                    brand_voice_tone="polite and professional",
-                    specialty="hospitality",
-                ),
-            )
-            model = Gemini(model="gemini-2.5-flash")
-            prompt = f"""You are a customer service manager replying to a review that was flagged.
-            Location: {profile.name}
-            Specialty: {profile.specialty}
-            Brand Voice/Tone: {profile.brand_voice_tone}
+            if is_security:
+                reply_text = "[Security Event] Review flagged for prompt injection. Auto-generation disabled."
+            else:
+                profile = LOCATION_PROFILES.get(
+                    review.location_id,
+                    LocationProfile(
+                        location_id=review.location_id,
+                        name="Our Restaurant",
+                        brand_voice_tone="polite and professional",
+                        specialty="hospitality",
+                    ),
+                )
+                model = Gemini(model="gemini-2.5-flash")
+                prompt = f"""You are a customer service manager replying to a review that was flagged.
+                Location: {profile.name}
+                Specialty: {profile.specialty}
+                Brand Voice/Tone: {profile.brand_voice_tone}
 
-            Review Details:
-            - Author: {review.author_name}
-            - Star Rating: {review.rating}
-            - Comment: "{review.comment}"
+                Review Details:
+                - Author: {review.author_name}
+                - Star Rating: {review.rating}
+                - Comment: "{review.comment}"
 
-            Write a professional, caring response apologizing for any issues, acknowledging their concerns, and asking them to contact management."""
-            response = await model.api_client.aio.models.generate_content(
-                model=model.model, contents=prompt
-            )
-            reply_text = response.text.strip() if response.text else ""
+                Write a professional, caring response apologizing for any issues, acknowledging their concerns, and asking them to contact management."""
+                response = await model.api_client.aio.models.generate_content(
+                    model=model.model, contents=prompt
+                )
+                reply_text = response.text.strip() if response.text else ""
         else:
             reply_text = human_response
 
         triage_result = TriageResult(
             review_id=review.review_id,
-            status="replied",
+            status="flagged" if is_security else "replied",
             reply_text=reply_text,
             flag_reason=f"Handled by human. Original flag reason: {reason}",
+            redacted_categories=ctx.state.get("redacted_categories", [])
         )
 
         yield Event(
