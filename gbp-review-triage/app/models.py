@@ -25,3 +25,6 @@ class TriageResult(BaseModel):
     flag_reason: str | None = Field(
         default=None, description="Reason for flagging if status is 'flagged'"
     )
+    redacted_categories: list[str] | None = Field(
+        default=None, description="Categories of PII redacted from the review comment"
+    )
