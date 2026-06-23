@@ -1,0 +1,50 @@
+# ADK 2.0 Workflow Definition
+# GBP Content Calendar Agent
+#
+# Status: Template — Ready for implementation
+# Reference: See ../1-gbp-review-triage-agent/ for detailed workflow pattern
+
+name: gbp-content-calendar-agent
+description: Auto-generate and schedule weekly GBP posts; gate promotional content for human approval
+
+nodes:
+  fetch_context:
+    type: http_fetch
+    description: Pull location list, events, and prior posts
+    # Implementation: Query client DB for locations, event calendar, post history
+
+  generate_posts:
+    type: llm_call
+    description: Generate 1-3 post drafts per location
+    # Implementation: Call LLM with location context, tone guide, and topic
+
+  classify_content:
+    type: llm_call
+    description: Classify as evergreen vs. promotional
+    # Implementation: Scoring model (confidence threshold > 0.85 = auto-publish)
+
+  auto_publish:
+    type: http_fetch
+    description: Format, schedule, and post to GBP
+    # Implementation: GBP API post creation, scheduled for business hours
+
+  review_agent:
+    type: request_input
+    description: Human approval gate for promotional content
+    # Implementation: Slack/email RequestInput with draft + approval buttons
+
+  log_schedule:
+    type: firestore_write
+    description: Audit trail
+    # Implementation: Record scheduled posts, approval timestamps, engagement metrics
+
+transitions:
+  # See README.md for full workflow diagram
+  # Simplified routing:
+  # fetch_context → generate_posts → classify_content
+  #   ├─ [evergreen] → auto_publish → log_schedule
+  #   └─ [promotional] → review_agent → log_schedule
+
+triggers:
+  schedule:
+    cron: "0 8 * * 1"  # Every Monday at 8am PT

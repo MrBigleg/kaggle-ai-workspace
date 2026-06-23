@@ -1,0 +1,62 @@
+# ADK 2.0 Workflow Definition
+# Client Onboarding Agent
+#
+# Status: Template — Ready for implementation
+# Reference: See ../1-gbp-review-triage-agent/ for detailed workflow pattern
+
+name: client-onboarding-agent
+description: Guide new clients through GBP setup; auto-complete standard steps; escalate blockers
+
+nodes:
+  init_onboarding:
+    type: input_handler
+    description: Accept client details, initialize workflow state
+    # Implementation: Receive location_id, client_name, existing_gbp_access
+
+  validate_access:
+    type: http_fetch
+    description: Confirm GBP API access, set up credentials
+    # Implementation: Test GBP API connectivity, store creds in secret manager
+
+  auto_complete:
+    type: sequential_execute
+    description: Run standard checklist steps in sequence
+    # Implementation:
+    #   1. Send access request email
+    #   2. Validate NAP (name, address, phone)
+    #   3. Audit photos
+    #   4. Generate photo checklist
+    #   5. Check duplicates
+    #   6. Review Q&A section
+    #   7. Check attributes/services
+
+  detect_blockers:
+    type: logic_gate
+    description: Check for suspensions, duplicates, NAP mismatches
+    # Implementation: Flag if any of: suspended, pending, duplicates, NAP mismatch
+
+  human_review:
+    type: request_input
+    description: Escalation for complex cases
+    # Implementation: Slack/email RequestInput with diagnostic details
+
+  generate_report:
+    type: llm_call
+    description: Onboarding summary + next steps
+    # Implementation: Formatted report ready for phase transition
+
+  log_progress:
+    type: firestore_write
+    description: Audit trail
+    # Implementation: Store onboarding state, blockers, resolutions
+
+transitions:
+  # init_onboarding → validate_access → auto_complete → detect_blockers
+  #   ├─ [no_blockers] → generate_report → log_progress
+  #   └─ [has_blockers] → human_review → [remediation] auto_complete (retry)
+  #                     → [unresolved] pause_workflow
+
+triggers:
+  manual:
+    path: /onboarding/start
+    method: POST

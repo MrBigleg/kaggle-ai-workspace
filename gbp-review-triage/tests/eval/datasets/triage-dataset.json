@@ -1,0 +1,18 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "positive_review_bistro",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "{\"review_id\": \"r001\", \"location_id\": \"loc_bangkok_01\", \"rating\": 5, \"author_name\": \"Sarah T.\", \"comment\": \"Absolutely loved it. Best meal in Bangkok.\"}"}]
+      }
+    },
+    {
+      "eval_case_id": "flagged_review_grill",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "{\"review_id\": \"r002\", \"location_id\": \"loc_bangkok_02\", \"rating\": 2, \"author_name\": \"James K.\", \"comment\": \"Got sick after eating here. Want a refund.\"}"}]
+      }
+    }
+  ]
+}

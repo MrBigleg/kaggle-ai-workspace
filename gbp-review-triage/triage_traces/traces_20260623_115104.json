@@ -1,0 +1,110 @@
+{
+  "eval_cases": [
+    {
+      "prompt": {
+        "parts": [
+          {
+            "text": "{\"review_id\": \"r001\", \"location_id\": \"loc_bangkok_01\", \"rating\": 5, \"author_name\": \"Sarah T.\", \"comment\": \"Absolutely loved it. Best meal in Bangkok.\"}"
+          }
+        ],
+        "role": "user"
+      },
+      "responses": [
+        {
+          "response": {
+            "parts": [
+              {
+                "text": "Auto-Reply generated for David's Bistro Bangkok:\n\nDear Sarah T.,\n\nThank you so much for your truly wonderful review! We are absolutely thrilled to hear that you \"loved it\" and considered your meal at David's Bistro Bangkok the \"best in Bangkok.\"\n\nIt truly delights us when guests like yourself appreciate the unique culinary journey we strive to create with our harmonious Thai-French fusion. Our passion lies in crafting dishes that excite the palate and offer a sophisticated yet warm experience, and your kind words confirm we're achieving that.\n\nWe sincerely hope to welcome you back again very soon for another delightful epicurean adventure.\n\nWarmly,\nThe Team at David's Bistro Bangkok"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "eval_case_id": "positive_review_bistro",
+      "agent_data": {
+        "agents": {
+          "gbp_triage_agent": {
+            "agent_id": "gbp_triage_agent",
+            "agent_type": "Workflow",
+            "description": "Ambient GBP review triage agent with auto-reply and human-in-the-loop flags.",
+            "tools": [],
+            "sub_agents": []
+          }
+        },
+        "turns": [
+          {
+            "turn_index": 0,
+            "turn_id": "turn_0",
+            "events": [
+              {
+                "author": "gbp_triage_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "Auto-Reply generated for David's Bistro Bangkok:\n\nDear Sarah T.,\n\nThank you so much for your truly wonderful review! We are absolutely thrilled to hear that you \"loved it\" and considered your meal at David's Bistro Bangkok the \"best in Bangkok.\"\n\nIt truly delights us when guests like yourself appreciate the unique culinary journey we strive to create with our harmonious Thai-French fusion. Our passion lies in crafting dishes that excite the palate and offer a sophisticated yet warm experience, and your kind words confirm we're achieving that.\n\nWe sincerely hope to welcome you back again very soon for another delightful epicurean adventure.\n\nWarmly,\nThe Team at David's Bistro Bangkok"
+                    }
+                  ],
+                  "role": "model"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "prompt": {
+        "parts": [
+          {
+            "text": "{\"review_id\": \"r002\", \"location_id\": \"loc_bangkok_02\", \"rating\": 2, \"author_name\": \"James K.\", \"comment\": \"Got sick after eating here. Want a refund.\"}"
+          }
+        ],
+        "role": "user"
+      },
+      "responses": [
+        {
+          "response": {
+            "parts": [
+              {
+                "text": "Response generated via human triage:\n\nDear James K.,\n\nWe are truly sorry to hear about your experience and the issues you've reported after dining with us at Timm's Grill & Oyster Bar. Your well-being is of the utmost importance to us, and we are absolutely devastated to learn of your discomfort.\n\nAt Timm's, our entire team is incredibly passionate about providing the freshest local seafood and ensuring every guest has a wonderful and safe dining experience. We maintain rigorous standards for food preparation and handling, and we take all feedback regarding guest health extremely seriously. This is certainly not the standard we strive for.\n\nWe would be grateful for the opportunity to discuss this further with you, understand the details of your visit, and address your concerns directly. Please reach out to us at your earliest convenience by calling [Insert Phone Number Here] or emailing [Insert Email Address Here], and ask for the management team.\n\nWe are eager to understand what happened and work towards a resolution.\n\nSincerely,\n\nThe Management Team\nTimm's Grill & Oyster Bar"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "eval_case_id": "flagged_review_grill",
+      "agent_data": {
+        "agents": {
+          "gbp_triage_agent": {
+            "agent_id": "gbp_triage_agent",
+            "agent_type": "Workflow",
+            "description": "Ambient GBP review triage agent with auto-reply and human-in-the-loop flags.",
+            "tools": [],
+            "sub_agents": []
+          }
+        },
+        "turns": [
+          {
+            "turn_index": 0,
+            "turn_id": "turn_0",
+            "events": [
+              {
+                "author": "gbp_triage_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "Response generated via human triage:\n\nDear James K.,\n\nWe are truly sorry to hear about your experience and the issues you've reported after dining with us at Timm's Grill & Oyster Bar. Your well-being is of the utmost importance to us, and we are absolutely devastated to learn of your discomfort.\n\nAt Timm's, our entire team is incredibly passionate about providing the freshest local seafood and ensuring every guest has a wonderful and safe dining experience. We maintain rigorous standards for food preparation and handling, and we take all feedback regarding guest health extremely seriously. This is certainly not the standard we strive for.\n\nWe would be grateful for the opportunity to discuss this further with you, understand the details of your visit, and address your concerns directly. Please reach out to us at your earliest convenience by calling [Insert Phone Number Here] or emailing [Insert Email Address Here], and ask for the management team.\n\nWe are eager to understand what happened and work towards a resolution.\n\nSincerely,\n\nThe Management Team\nTimm's Grill & Oyster Bar"
+                    }
+                  ],
+                  "role": "model"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

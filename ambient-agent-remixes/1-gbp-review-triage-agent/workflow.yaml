@@ -1,0 +1,175 @@
+# ADK 2.0 Workflow Definition
+# GBP Review Triage Agent
+
+name: gbp-review-triage-agent
+description: Auto-reply to positive reviews; escalate negative or sensitive reviews to human
+
+nodes:
+  extract_review:
+    type: http_fetch
+    description: Parse incoming review from GBP webhook
+    config:
+      method: POST
+      url: ${GBP_API_ENDPOINT}/locations/{location_id}/reviews/{review_id}
+      headers:
+        Authorization: Bearer ${GBP_API_KEY}
+    output:
+      - review_id
+      - location_id
+      - rating
+      - reviewer_name
+      - review_text
+      - review_timestamp
+
+  classify_sentiment:
+    type: llm_call
+    description: Classify sentiment and detect sensitive keywords
+    config:
+      model: ${LLM_MODEL}  # e.g., claude-3-5-sonnet
+      provider: ${LLM_PROVIDER}  # e.g., anthropic
+      system_prompt: |
+        You are a sentiment classifier for Google Business Profile reviews.
+        Classify the review rating and detect sensitive keywords.
+        Return JSON with: rating (int), has_sensitive_keywords (bool), keywords (list).
+      temperature: 0.3
+    input:
+      - review_text
+      - rating
+    output:
+      - classification_rating
+      - has_sensitive_keywords
+      - detected_keywords
+      - sentiment_score
+
+  auto_reply:
+    type: llm_call
+    description: Generate response to positive review
+    config:
+      model: ${LLM_MODEL}
+      provider: ${LLM_PROVIDER}
+      system_prompt: |
+        Generate a professional, warm response to a positive Google Business Profile review.
+        Keep response under 140 characters.
+        Include: gratitude + specific detail from review + call to action.
+      temperature: 0.7
+    input:
+      - review_text
+      - reviewer_name
+    output:
+      - generated_response
+
+  post_reply:
+    type: http_fetch
+    description: Post approved response to GBP
+    config:
+      method: POST
+      url: ${GBP_API_ENDPOINT}/locations/{location_id}/reviews/{review_id}/reply
+      headers:
+        Authorization: Bearer ${GBP_API_KEY}
+      body: |
+        {
+          "comment": "${generated_response}"
+        }
+    output:
+      - reply_posted_timestamp
+
+  flag_for_human:
+    type: request_input
+    description: Escalate to human reviewer
+    config:
+      channel: slack  # or email, webhook
+      slack_channel_id: ${SLACK_CHANNEL_ID}
+      message: |
+        🚨 GBP Review Escalation
+        Location: {location_id}
+        Rating: {rating}
+        Reviewer: {reviewer_name}
+        Text: {review_text}
+        Reason: Low rating or sensitive keywords detected: {detected_keywords}
+      approve_text: "Post approved response"
+      reject_text: "Skip response"
+    timeout: 4h
+    output:
+      - human_decision
+      - human_comment
+      - approved_at
+
+  post_human_approved_reply:
+    type: http_fetch
+    description: Post human-approved response to GBP
+    config:
+      method: POST
+      url: ${GBP_API_ENDPOINT}/locations/{location_id}/reviews/{review_id}/reply
+      headers:
+        Authorization: Bearer ${GBP_API_KEY}
+      body: |
+        {
+          "comment": "${human_comment}"
+        }
+    output:
+      - reply_posted_timestamp
+
+  log_action:
+    type: firestore_write
+    description: Audit trail
+    config:
+      project_id: ${FIRESTORE_PROJECT_ID}
+      collection: gbp_review_triage_log
+      document_id: ${review_id}
+      data: |
+        {
+          "location_id": "${location_id}",
+          "review_id": "${review_id}",
+          "rating": ${classification_rating},
+          "reviewer_name": "${reviewer_name}",
+          "action": "${action}",  # auto_reply or human_escalated
+          "response_posted": ${reply_posted_timestamp},
+          "response_latency_minutes": ${ (reply_posted_timestamp - review_timestamp) / 60 },
+          "human_involved": ${human_involved},
+          "timestamp": now()
+        }
+
+transitions:
+  extract_review:
+    - next: classify_sentiment
+
+  classify_sentiment:
+    - condition: classification_rating >= 4 AND NOT has_sensitive_keywords
+      next: auto_reply
+    - condition: classification_rating < 4 OR has_sensitive_keywords
+      next: flag_for_human
+    - default: log_action
+
+  auto_reply:
+    - next: post_reply
+
+  post_reply:
+    - set:
+        action: auto_reply
+        human_involved: false
+    - next: log_action
+
+  flag_for_human:
+    - next: [human_decision_loop]
+    - condition: human_decision == "approve"
+      set:
+        action: human_escalated
+        human_involved: true
+      next: post_human_approved_reply
+    - condition: human_decision == "reject" or timeout
+      set:
+        action: human_rejected
+        human_involved: true
+      next: log_action
+
+  post_human_approved_reply:
+    - next: log_action
+
+  log_action:
+    - next: [end]
+
+triggers:
+  webhook:
+    path: /gbp-review-webhook
+    method: POST
+    source: google.business.profile

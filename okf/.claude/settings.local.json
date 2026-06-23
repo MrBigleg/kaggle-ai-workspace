@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Force C:\\\\Users\\\\craig\\\\01_Projects\\\\001_Kaggle\\\\okf | Select-Object Name, Mode, Length; \"----- git? -----\"; \\(Get-Command git -ErrorAction SilentlyContinue\\).Source; \"----- python? -----\"; \\(Get-Command python -ErrorAction SilentlyContinue\\).Source; \\(Get-Command py -ErrorAction SilentlyContinue\\).Source)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ]
+  }
+}

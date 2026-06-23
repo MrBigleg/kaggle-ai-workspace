@@ -1,0 +1,48 @@
+# ADK 2.0 Workflow Definition
+# GBP Suspension Early Warning Agent
+#
+# Status: Template — Ready for implementation
+# Reference: See ../1-gbp-review-triage-agent/ for detailed workflow pattern
+
+name: gbp-suspension-early-warning-agent
+description: Monitor GBP health, detect status changes, run diagnostics, alert via Slack
+
+nodes:
+  fetch_profiles:
+    type: http_fetch
+    description: Fetch GBP profile status for all locations
+    # Implementation: Batch call GBP API, compare against Firestore baseline
+
+  compare_state:
+    type: logic_gate
+    description: Detect status changes
+    # Implementation: Check if current state != last known state
+
+  auto_alert:
+    type: notification
+    description: Classify change type + run diagnostics
+    # Implementation: Slack/email alert with diagnostic details
+
+  diagnostic_suite:
+    type: parallel_execute
+    description: Check reviews, photos, NAP, posting history
+    # Implementation: Parallel checks for policy violations, stale content, NAP mismatches
+
+  triage_agent:
+    type: request_input
+    description: Human escalation + action queue
+    # Implementation: Slack RequestInput for ops team
+
+  log_event:
+    type: firestore_write
+    description: Audit trail
+    # Implementation: Record all status changes and diagnostics
+
+transitions:
+  # fetch_profiles → compare_state
+  #   ├─ [no_change] → log_event
+  #   └─ [status_changed] → auto_alert → diagnostic_suite → triage_agent → log_event
+
+triggers:
+  schedule:
+    cron: "*/15 * * * *"  # Every 15 minutes

@@ -1,0 +1,37 @@
+[
+  {
+    "review_id": "r001",
+    "location_id": "loc_bangkok_01",
+    "rating": 5,
+    "author_name": "Sarah T.",
+    "comment": "Absolutely loved it. Best meal in Bangkok."
+  },
+  {
+    "review_id": "r002",
+    "location_id": "loc_bangkok_02",
+    "rating": 2,
+    "author_name": "James K.",
+    "comment": "Got sick after eating here. Want a refund."
+  },
+  {
+    "review_id": "r003",
+    "location_id": "loc_phuket_01",
+    "rating": 4,
+    "author_name": "Anna L.",
+    "comment": "Very friendly staff and great service. Will come back!"
+  },
+  {
+    "review_id": "r004",
+    "location_id": "loc_bangkok_01",
+    "rating": 1,
+    "author_name": "Mike D.",
+    "comment": "This place is dangerous! Found a cockroach under the table!"
+  },
+  {
+    "review_id": "r005",
+    "location_id": "loc_phuket_01",
+    "rating": 3,
+    "author_name": "Robert P.",
+    "comment": "Food was okay, but the service was extremely slow."
+  }
+]

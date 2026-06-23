@@ -1,0 +1,79 @@
+# Environment variables — never commit real credentials
+.env
+.env.local
+.env.*.local
+
+# Python virtual environments
+.venv/
+.venv*/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+wheels/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Type checkers
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ty/
+.pyre/
+
+# Linting / formatting
+.ruff_cache/
+
+# ADK / Agent CLI
+.adk/
+.agents-cli-scripts/
+.google-agents-cli/
+.persist_vector_store
+.saved_chats
+.locust_env
+
+# OS files
+desktop.ini
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.sublime-workspace
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Terraform
+.terraform*/
+*.tfvars
+my_env.tfvars
+
+# Logs
+*.log
+tmp*/

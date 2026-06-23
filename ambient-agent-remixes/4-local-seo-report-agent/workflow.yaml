@@ -1,0 +1,48 @@
+# ADK 2.0 Workflow Definition
+# Local SEO Report Agent
+#
+# Status: Template — Ready for implementation
+# Reference: See ../1-gbp-review-triage-agent/ for detailed workflow pattern
+
+name: local-seo-report-agent
+description: Generate weekly KPI reports; flag locations with 15%+ performance drops
+
+nodes:
+  fetch_insights:
+    type: http_fetch
+    description: Pull GBP Insights API data for all locations
+    # Implementation: Batch fetch impressions, calls, directions for 1-week window
+
+  aggregate_kpis:
+    type: llm_call
+    description: Combine metrics, calculate week-over-week %
+    # Implementation: Compare current week vs. prior week, compute deltas
+
+  detect_anomalies:
+    type: logic_gate
+    description: Flag >15% drops
+    # Implementation: Check each KPI for significant decline
+
+  auto_generate:
+    type: llm_call
+    description: Format & send summary reports
+    # Implementation: Generate markdown/HTML report, send via email
+
+  insight_agent:
+    type: request_input
+    description: Human investigation + diagnostics
+    # Implementation: Slack/email with anomaly details and action items
+
+  log_reports:
+    type: firestore_write
+    description: Audit trail
+    # Implementation: Store all reports, anomaly flags, human actions
+
+transitions:
+  # fetch_insights → aggregate_kpis → detect_anomalies
+  #   ├─ [no_drops] → auto_generate → log_reports
+  #   └─ [>15% drop] → insight_agent → log_reports
+
+triggers:
+  schedule:
+    cron: "0 17 * * 5"  # Every Friday at 5pm PT
