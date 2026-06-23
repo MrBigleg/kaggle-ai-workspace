@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import re
 from typing import Any
 
 import google.auth
@@ -26,6 +27,68 @@ from google.adk.workflow import START, Edge, Workflow, node
 from google.genai import types
 
 from .models import LocationProfile, ReviewInput, TriageResult
+
+
+def is_luhn_valid(number_str: str) -> bool:
+    digits = [int(c) for c in number_str if c.isdigit()]
+    if len(digits) < 13 or len(digits) > 19:
+        return False
+    checksum = 0
+    reverse_digits = digits[::-1]
+    for i, digit in enumerate(reverse_digits):
+        if i % 2 == 1:
+            double_digit = digit * 2
+            if double_digit > 9:
+                double_digit -= 9
+            checksum += double_digit
+        else:
+            checksum += digit
+    return checksum % 10 == 0
+
+
+def scrub_pii(text: str) -> tuple[str, list[str]]:
+    redacted = []
+    comment = text
+    
+    # Match SSN: 3 digits, hyphen/space/none, 2 digits, hyphen/space/none, 4 digits
+    ssn_pattern = re.compile(r'\b\d{3}[- ]\d{2}[- ]\d{4}\b')
+    if ssn_pattern.search(comment):
+        comment = ssn_pattern.sub("[REDACTED_SSN]", comment)
+        redacted.append("SSN")
+
+    # CC pattern
+    cc_candidate_pattern = re.compile(r'\b(?:\d[ -]*?){13,19}\b')
+    for match in cc_candidate_pattern.finditer(comment):
+        candidate = match.group(0)
+        digits_only = "".join(c for c in candidate if c.isdigit())
+        if is_luhn_valid(digits_only):
+            comment = comment.replace(candidate, "[REDACTED_CC]")
+            if "Credit Card" not in redacted:
+                redacted.append("Credit Card")
+    return comment, redacted
+
+
+def detect_prompt_injection(text: str) -> bool:
+    text_lower = text.lower()
+    injection_phrases = [
+        "ignore all previous",
+        "ignore previous",
+        "bypass the rules",
+        "bypass rules",
+        "force auto-approval",
+        "force auto_approval",
+        "force approval",
+        "override safety",
+        "override guidelines",
+        "override rules",
+        "you must auto-approve",
+        "you must approve",
+        "forget your instructions",
+        "ignore instructions",
+        "system prompt",
+        "bypass security",
+    ]
+    return any(phrase in text_lower for phrase in injection_phrases)
 
 # Load environment configuration (.env)
 load_dotenv()
