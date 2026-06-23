@@ -129,6 +129,53 @@ LOCATION_PROFILES = {
 
 
 @node
+async def security_checkpoint(ctx: Context, node_input: Any):
+    """Scrubs PII and detects prompt injection before any LLM processing."""
+    import json
+
+    if "current_review" in ctx.state:
+        review = ReviewInput(**ctx.state["current_review"])
+    elif isinstance(node_input, types.Content):
+        text = node_input.parts[0].text
+        try:
+            data = json.loads(text)
+            review = ReviewInput(**data)
+        except Exception:
+            review = ReviewInput(
+                review_id="unknown",
+                location_id="unknown",
+                rating=5,
+                author_name="Unknown",
+                comment=text,
+            )
+    elif isinstance(node_input, dict):
+        review = ReviewInput(**node_input)
+    else:
+        review = node_input
+
+    scrubbed_comment, redacted = scrub_pii(review.comment)
+    review.comment = scrubbed_comment
+    
+    ctx.state["redacted_categories"] = redacted
+    ctx.state["current_review"] = review.model_dump()
+
+    if detect_prompt_injection(scrubbed_comment):
+        ctx.state["is_security_event"] = True
+        return Event(
+            output={
+                "review": review.model_dump(),
+                "reason": "Security Event: Prompt Injection Detected"
+            },
+            actions=EventActions(route="flag"),
+        )
+
+    return Event(
+        output=review.model_dump(),
+        actions=EventActions(route="classify"),
+    )
+
+
+@node
 async def classify_review(ctx: Context, node_input: Any):
     """Classifies reviews based on rating and safety keywords."""
     import json
@@ -375,11 +422,13 @@ root_agent = Workflow(
     name="gbp_triage_agent",
     output_schema=TriageResult,
     edges=[
-        Edge(from_node=START, to_node=classify_review),
+        Edge(from_node=START, to_node=security_checkpoint),
+        Edge(from_node=security_checkpoint, to_node=flag_for_human, route="flag"),
+        Edge(from_node=security_checkpoint, to_node=classify_review, route="classify"),
         Edge(from_node=classify_review, to_node=auto_reply, route="auto_reply"),
         Edge(from_node=classify_review, to_node=flag_for_human, route="flag"),
     ],
-    description="Ambient GBP review triage agent with auto-reply and human-in-the-loop flags.",
+    description="Ambient GBP review triage agent with security controls, auto-reply and human-in-the-loop flags.",
 )
 
 app = App(
