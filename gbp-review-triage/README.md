@@ -113,6 +113,25 @@ The evaluation runner executes tests in a non-interactive, single-turn mode. If 
    uv run agents-cli eval grade --traces triage_traces/
    ```
 
+
+---
+
+## 🔒 Security Validation: PII Redaction & Prompt-Injection Defense
+
+To protect sensitive data and prevent unauthorized instruction overrides, we have integrated a local security validation layer at the entrance of the agent workflow.
+
+For detailed design, implementation, and test execution details, see the [Security Checkpoint Walkthrough](../docs/superpowers/walkthroughs/2026-06-23-gbp-security-checkpoint.md).
+
+### Key Protections
+1. **PII Redaction**: US Social Security Numbers (`[REDACTED_SSN]`) and Credit Card numbers (`[REDACTED_CC]`) are scrubbed using regular expressions and Luhn algorithm validation.
+2. **Prompt-Injection Defense**: Scans input comments for command-override patterns and routes them directly to the human flag queue (`flag_for_human`), bypassing all LLM API generations.
+
+### Running Security Validation Tests
+Execute the unit tests verifying safety heuristics and security checkpoint routing:
+```bash
+uv run pytest tests/unit/test_security.py
+```
+
 ---
 
 ## 🛠️ Code Quality

@@ -11,7 +11,7 @@ My working repo for the [5-Day AI Agents Intensive: Vibe-coding Course with Goog
 | Folder | Status | What it is |
 |--------|--------|------------|
 | [`thai-uhp-promise-engine/`](thai-uhp-promise-engine/) | 🔧 WIP | **Capstone project.** A multi-agent promise-to-fit system that determines whether exact UHP tires can be sourced, transferred, and fitted at a Thai branch by a requested time — with grounded evidence. |
-| [`gbp-review-triage/`](gbp-review-triage/) | 🔧 WIP | Google Business Profile review triage agent — classifies, prioritises, and drafts responses to GBP reviews using ADK. |
+| [`gbp-review-triage/`](gbp-review-triage/) | 🔧 WIP | Google Business Profile review triage agent — classifies, prioritises, and drafts responses. Completed [Add security: PII redaction & prompt-injection defense](docs/superpowers/walkthroughs/2026-06-23-gbp-security-checkpoint.md). |
 | [`ambient-expense-agent/`](ambient-expense-agent/) | 🔧 WIP | Ambient agent pattern experiment: passive expense monitoring and summarisation via Agent Runtime. |
 | [`weather-assistant/`](weather-assistant/) | 🔧 WIP | Starter agent from the course scaffold — extended to explore ADK tool use and FastAPI deployment patterns. |
 | [`ambient-agent-remixes/`](ambient-agent-remixes/) | 📐 Design | Five ambient agent designs (GBP content calendar, suspension early warning, local SEO report, client onboarding) — specs and workflow YAML, not yet built. |
