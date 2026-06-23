@@ -49,15 +49,15 @@ def is_luhn_valid(number_str: str) -> bool:
 def scrub_pii(text: str) -> tuple[str, list[str]]:
     redacted = []
     comment = text
-    
+
     # Match SSN: 3 digits, hyphen/space/none, 2 digits, hyphen/space/none, 4 digits
-    ssn_pattern = re.compile(r'\b\d{3}[- ]\d{2}[- ]\d{4}\b')
+    ssn_pattern = re.compile(r"\b\d{3}[- ]\d{2}[- ]\d{4}\b")
     if ssn_pattern.search(comment):
         comment = ssn_pattern.sub("[REDACTED_SSN]", comment)
         redacted.append("SSN")
 
     # CC pattern
-    cc_candidate_pattern = re.compile(r'\b(?:\d[ -]*?){13,19}\b')
+    cc_candidate_pattern = re.compile(r"\b(?:\d[ -]*?){13,19}\b")
     for match in cc_candidate_pattern.finditer(comment):
         candidate = match.group(0)
         digits_only = "".join(c for c in candidate if c.isdigit())
@@ -89,6 +89,7 @@ def detect_prompt_injection(text: str) -> bool:
         "bypass security",
     ]
     return any(phrase in text_lower for phrase in injection_phrases)
+
 
 # Load environment configuration (.env)
 load_dotenv()
@@ -155,7 +156,7 @@ async def security_checkpoint(ctx: Context, node_input: Any):
 
     scrubbed_comment, redacted = scrub_pii(review.comment)
     review.comment = scrubbed_comment
-    
+
     ctx.state["redacted_categories"] = redacted
     ctx.state["current_review"] = review.model_dump()
 
@@ -164,7 +165,7 @@ async def security_checkpoint(ctx: Context, node_input: Any):
         return Event(
             output={
                 "review": review.model_dump(),
-                "reason": "Security Event: Prompt Injection Detected"
+                "reason": "Security Event: Prompt Injection Detected",
             },
             actions=EventActions(route="flag"),
         )
@@ -274,7 +275,7 @@ async def auto_reply(ctx: Context, node_input: dict):
         review_id=review.review_id,
         status="replied",
         reply_text=reply_text,
-        redacted_categories=ctx.state.get("redacted_categories", [])
+        redacted_categories=ctx.state.get("redacted_categories", []),
     )
 
     yield Event(
@@ -353,14 +354,16 @@ async def flag_for_human(ctx: Context, node_input: dict):
             yield RequestInput(interrupt_id=interrupt_id, message=msg)
             return
 
-    is_security = ctx.state.get("is_security_event", False) or "Security Event" in reason
+    is_security = (
+        ctx.state.get("is_security_event", False) or "Security Event" in reason
+    )
 
     if human_response.upper() == "IGNORE":
         triage_result = TriageResult(
             review_id=review.review_id,
             status="flagged",
             flag_reason=f"Ignored by human. Original flag reason: {reason}",
-            redacted_categories=ctx.state.get("redacted_categories", [])
+            redacted_categories=ctx.state.get("redacted_categories", []),
         )
         yield Event(
             content=types.Content(
@@ -410,7 +413,7 @@ async def flag_for_human(ctx: Context, node_input: dict):
             status="flagged" if is_security else "replied",
             reply_text=reply_text,
             flag_reason=f"Handled by human. Original flag reason: {reason}",
-            redacted_categories=ctx.state.get("redacted_categories", [])
+            redacted_categories=ctx.state.get("redacted_categories", []),
         )
 
         yield Event(

@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.models import TriageResult
+output "app_service_account_email" {
+  description = "Application service account email"
+  value       = google_service_account.app_sa.email
+}
 
-
-def test_triage_result_schema():
-    res = TriageResult(
-        review_id="r001", status="replied", redacted_categories=["SSN", "Credit Card"]
-    )
-    assert res.redacted_categories == ["SSN", "Credit Card"]
+output "logs_bucket_name" {
+  description = "Logs storage bucket name"
+  value       = google_storage_bucket.logs_data_bucket.name
+}

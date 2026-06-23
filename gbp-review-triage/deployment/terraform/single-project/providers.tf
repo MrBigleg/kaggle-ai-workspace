@@ -12,11 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.models import TriageResult
+terraform {
+  required_version = ">= 1.0.0"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 7.13.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.7.0"
+    }
+  }
+}
 
-
-def test_triage_result_schema():
-    res = TriageResult(
-        review_id="r001", status="replied", redacted_categories=["SSN", "Credit Card"]
-    )
-    assert res.redacted_categories == ["SSN", "Credit Card"]
+provider "google" {
+  alias                 = "billing_override"
+  billing_project       = var.project_id
+  region = var.region
+  user_project_override = true
+}

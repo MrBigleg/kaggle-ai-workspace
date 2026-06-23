@@ -12,11 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.models import TriageResult
+provider "google" {
+  project               = var.project_id
+  region                = var.region
+  user_project_override = true
+}
 
+resource "google_storage_bucket" "logs_data_bucket" {
+  name                        = "${var.project_id}-${var.project_name}-logs"
+  location                    = var.region
+  project                     = var.project_id
+  uniform_bucket_level_access = true
 
-def test_triage_result_schema():
-    res = TriageResult(
-        review_id="r001", status="replied", redacted_categories=["SSN", "Credit Card"]
-    )
-    assert res.redacted_categories == ["SSN", "Credit Card"]
+  depends_on = [resource.google_project_service.services]
+}

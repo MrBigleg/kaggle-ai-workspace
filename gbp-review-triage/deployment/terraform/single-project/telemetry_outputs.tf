@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.models import TriageResult
+output "telemetry_dataset_id" {
+  description = "BigQuery dataset ID for telemetry data"
+  value       = google_bigquery_dataset.telemetry_dataset.dataset_id
+}
 
-
-def test_triage_result_schema():
-    res = TriageResult(
-        review_id="r001", status="replied", redacted_categories=["SSN", "Credit Card"]
-    )
-    assert res.redacted_categories == ["SSN", "Credit Card"]
+output "telemetry_bigquery_connection_id" {
+  description = "BigQuery connection ID for telemetry GCS access"
+  value       = google_bigquery_connection.genai_telemetry_connection.connection_id
+}
