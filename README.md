@@ -43,10 +43,10 @@ Each subfolder is its own project with its own `README.md`, `pyproject.toml`, an
 gcloud auth application-default login
 ```
 
-This repo uses a git submodule for `GBP-TO-OKF AUTO-SCAFFOLDER`. Clone with:
+Most projects are self-contained. The `GBP-TO-OKF AUTO-SCAFFOLDER` subfolder is a git submodule that is currently private — it will become public when the capstone is complete. Clone without it for now:
 
 ```bash
-git clone --recurse-submodules https://github.com/MrBigleg/kaggle-ai-workspace.git
+git clone https://github.com/MrBigleg/kaggle-ai-workspace.git
 ```
 
 ---
