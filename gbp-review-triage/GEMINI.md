@@ -59,3 +59,11 @@ Ask the user: Option A (simple single-project) or Option B (full CI/CD pipeline 
 - **Run Python with `uv`**: `uv run python script.py`. Run `agents-cli install` first.
 - **Stop on repeated errors**: If the same error appears 3+ times, fix the root cause instead of retrying.
 - **Terraform conflicts** (Error 409): Use `terraform import` instead of retrying creation.
+
+## Troubleshooting & Lessons Learned
+
+### Vertex AI Agent Engine Python Version Mismatches
+* **Issue**: Deployment fails during the Cloud Build step with errors like `Build failed. The issue might be caused by incorrect code, requirements.txt file or other dependencies`, and the cloud logs show `ERROR: No matching distribution found for <dependency>` (e.g. `litellm`), along with warnings about ignoring versions due to Python version requirements.
+* **Cause**: Without an explicit Python version, the remote Vertex AI builder may default to a newer container version (e.g. Python 3.14). If dependencies have version bounds (such as `litellm` requiring `<3.14`), the builder's pip installer ignores them.
+* **Resolution**: Ensure the deployment spec explicitly sets `pythonVersion` to `3.11`. If deploying via `google-agents-cli`, verify that the global tool's `agent_runtime.py` file is patched to pass `python_version=...` inside the client's `_create_config` REST builder call.
+
