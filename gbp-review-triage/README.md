@@ -272,3 +272,44 @@ To auto-fix style and import formatting:
 ```bash
 agents-cli lint --fix
 ```
+
+---
+
+## 🚀 Production Deployment & Usage (Vertex AI Agent Engine)
+
+The agent can be deployed to a managed Vertex AI Agent Engine (Reasoning Engine) instance for serverless hosting.
+
+### 1. Deploying the Agent
+Deploy to your Google Cloud project using the CLI (specifying your GCP project ID and target region):
+```bash
+agents-cli deploy --project YOUR_PROJECT_ID --region us-west1
+```
+
+### 2. Interacting with the Deployed Agent
+After deployment, you can invoke the live endpoint using the Vertex AI Python SDK:
+
+```python
+from google.cloud import aiplatform
+
+# 1. Initialize Vertex AI SDK
+aiplatform.init(project="YOUR_PROJECT_ID", location="us-west1")
+
+# 2. Reference the deployed agent by its ID
+# (Find this ID in deployment_metadata.json after deployment)
+engine_id = "3676107176306278400"
+remote_agent = aiplatform.reasoning_engines.ReasoningEngine(engine_id)
+
+# 3. Submit a review triage payload
+response = remote_agent.query(
+    input={
+        "review_id": "r_happy_001",
+        "location_id": "loc_bangkok_01",
+        "rating": 5,
+        "author_name": "Sarah T.",
+        "comment": "Absolutely loved the fusion dishes! Best meal in Bangkok."
+    }
+)
+
+print(response)
+```
+
