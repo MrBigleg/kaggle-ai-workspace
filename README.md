@@ -1,5 +1,9 @@
 # kaggle-ai-workspace
 
+Built and maintained by Craig Burton at [CTB Digital Marketing](https://ctbmarketing.com), creators of [Rank-in-Maps](https://www.rank-in-maps.com/), evidence-backed Local SEO, GBP optimisation, and AI automation tools. 🙏📍🛺
+
+---
+
 > **Building in public.** Nothing here is finished. This is an active workspace — experiments, capstone work, remixes, and scaffolding evolve in real time.
 
 My working repo for the [5-Day AI Agents Intensive: Vibe-coding Course with Google](https://www.kaggle.com/competitions/5-day-ai-agents-intensive-vibecoding-course-with-google/overview) on Kaggle. Built with Google ADK, Vertex AI, and Gemini — exploring ambient agents, OKF knowledge bundles, and real-world agent architectures.
