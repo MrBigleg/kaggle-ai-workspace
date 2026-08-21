@@ -81,3 +81,11 @@ tmp*/
 # Claude Code workspace config (AI tooling, not project content)
 CLAUDE.md
 .claude/
+
+# Standalone Project Repositories
+ATA-hackathon/
+Concierge-Agent-website-B/
+Gemini-OKF-BUILDER/
+Titan-Inventory-Agent-Website-A/
+*.code-workspace
+
